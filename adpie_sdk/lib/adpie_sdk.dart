@@ -1,8 +1,136 @@
+import 'package:flutter/services.dart';
+import 'package:adpie_sdk/src/adpie_sdk_listener.dart';
 
-import 'adpie_sdk_platform_interface.dart';
+export 'package:adpie_sdk/src/adpie_sdk_listener.dart';
 
-class AdpieSdk {
-  Future<String?> getPlatformVersion() {
-    return AdpieSdkPlatform.instance.getPlatformVersion();
+class AdPieSdk {
+  static const version = "0.0.1";
+
+  static const channel = MethodChannel('adpie_sdk');
+
+  static AdViewListener? _adViewListener;
+  static InterstitialAdListener? _interstitialAdListener;
+  static RewardedAdListener? _rewardedAdListener;
+
+  AdPieSdk();
+
+  static void initialize(String appId) {
+
+    channel.setMethodCallHandler((MethodCall call) async {
+      var method = call.method;
+      var arguments = call.arguments;
+      print("method : " + method);
+
+      if (method == "AdView_onAdLoaded") {
+        _adViewListener?.onAdLoaded();
+      } else if (method == "AdView_onAdFailedToLoad") {
+        _adViewListener?.onAdFailedToLoad(arguments['error_code']);
+      } else if (method == "AdView_onAdClicked") {
+        _adViewListener?.onAdClicked();
+      }
+
+      if (method == "Interstitial_onAdLoaded") {
+        _interstitialAdListener?.onAdLoaded();
+      } else if (method == "Interstitial_onAdFailedToLoad") {
+        _interstitialAdListener?.onAdFailedToLoad(arguments['error_code']);
+      } else if (method == "Interstitial_onAdShown") {
+        _interstitialAdListener?.onAdShown();
+      } else if (method == "Interstitial_onAdClicked") {
+        _interstitialAdListener?.onAdClicked();
+      } else if (method == "Interstitial_onAdDismissed") {
+        _interstitialAdListener?.onAdDismissed();
+      }
+
+      if (method == "RewardedAd_onRewardedVideoLoaded") {
+        _rewardedAdListener?.onAdLoaded();
+      } else if (method == "RewardedAd_onRewardedVideoFailedToLoad") {
+        _rewardedAdListener?.onAdFailedToLoad(arguments['error_code']);
+      } else if (method == "RewardedAd_onRewardedVideoStarted") {
+        _rewardedAdListener?.onAdShown();
+      } else if (method == "RewardedAd_onRewardedVideoClicked") {
+        _rewardedAdListener?.onAdClicked();
+      } else if (method == "RewardedAd_onRewardedVideoFinished") {
+        if (arguments['finish_state'] == 3) {
+          _rewardedAdListener?.onAdRewarded();
+        }
+
+        _rewardedAdListener?.onAdDismissed();
+      }
+    });
+
+    channel.invokeMethod('initialize', {
+      'plugin_version': version,
+      'media_id': appId,
+    });
+  }
+
+  static Future<bool?> isInitialized() {
+    return channel.invokeMethod('isInitialized');
+  }
+
+  static void loadAdView(String slotId) {
+    channel.invokeMethod('loadAdView', {
+      'slot_id': slotId,
+    });
+  }
+
+  static void destroyAdView(String slotId) {
+    channel.invokeMethod('destroyAdView', {
+      'slot_id': slotId,
+    });
+  }
+
+  static void loadInterstitial(String slotId) {
+    channel.invokeMethod('loadInterstitial', {
+      'slot_id': slotId,
+    });
+  }
+
+  static void showInterstitial(String slotId) {
+    channel.invokeMethod('showInterstitial', {
+      'slot_id': slotId,
+    });
+  }
+
+  static void destroyInterstitial(String slotId) {
+    channel.invokeMethod('destroyInterstitial', {
+      'slot_id': slotId,
+    });
+  }
+
+  static Future<bool?> isInterstitialLoaded(String slotId) {
+    return channel.invokeMethod('isInterstitialLoaded', {
+      'slot_id': slotId,
+    });
+  }
+
+  static void loadRewardedAd(String slotId) {
+    channel.invokeMethod('loadRewardedAd', {
+      'slot_id': slotId,
+    });
+  }
+
+  static void showRewardedAd(String slotId) {
+    channel.invokeMethod('showRewardedAd', {
+      'slot_id': slotId,
+    });
+  }
+
+  static Future<bool?> isRewardedAdLoaded(String slotId) {
+    return channel.invokeMethod('isRewardedAdLoaded', {
+      'slot_id': slotId,
+    });
+  }
+
+  static void setAdViewListener(AdViewListener adViewListener) {
+    _adViewListener = adViewListener;
+  }
+
+  static void setInterstitialListener(InterstitialAdListener interstitialAdListener) {
+    _interstitialAdListener = interstitialAdListener;
+  }
+
+  static void setRewardedAdListener(RewardedAdListener rewardedAdListener) {
+    _rewardedAdListener = rewardedAdListener;
   }
 }
