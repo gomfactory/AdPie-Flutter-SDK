@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:adpie_sdk/adpie_sdk.dart';
+import 'dart:io' show Platform;
 
 class AdPieBanner extends StatefulWidget {
   @override
@@ -10,7 +11,7 @@ class AdPieBanner extends StatefulWidget {
 
 class _AdPieBanner extends State<AdPieBanner> {
 
-  String slotId = "57342e0d7174ea39844cac13";
+  String slotId = Platform.isAndroid ? "57342e0d7174ea39844cac13" : "57342fdd7174ea39844cac15";
 
   @override
   void initState() {

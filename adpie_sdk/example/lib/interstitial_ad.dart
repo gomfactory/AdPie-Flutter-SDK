@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:adpie_sdk/adpie_sdk.dart';
+import 'dart:io' show Platform;
 
 class AdPieInterstitialAd extends StatefulWidget {
   @override
@@ -10,7 +11,7 @@ class AdPieInterstitialAd extends StatefulWidget {
 
 class _AdPieInterstitialAd extends State<AdPieInterstitialAd>{
 
-  String slotId = "57342e3d7174ea39844cac14";
+  String slotId = Platform.isAndroid ? "57342e3d7174ea39844cac14" : "573430057174ea39844cac16";
 
   @override
   Widget build(BuildContext context) {

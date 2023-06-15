@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-
 import 'package:adpie_sdk/adpie_sdk.dart';
+import 'dart:io' show Platform;
 
 import 'banner_ad.dart';
 import 'interstitial_ad.dart';
 import 'rewarded_ad.dart';
 
+String mediaId = Platform.isAndroid ? "57342d1b7174ea39844cac10" : "57342d787174ea39844cac11";
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  AdPieSdk.initialize("57342d1b7174ea39844cac10");
+
+  AdPieSdk.initialize(mediaId);
 
   runApp(const MyApp());
 }
