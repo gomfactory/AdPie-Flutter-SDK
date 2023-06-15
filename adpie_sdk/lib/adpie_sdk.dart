@@ -41,19 +41,17 @@ class AdPieSdk {
         _interstitialAdListener?.onAdDismissed();
       }
 
-      if (method == "RewardedAd_onRewardedVideoLoaded") {
+      if (method == "RewardedAd_onAdLoaded") {
         _rewardedAdListener?.onAdLoaded();
-      } else if (method == "RewardedAd_onRewardedVideoFailedToLoad") {
+      } else if (method == "RewardedAd_onAdFailedToLoad") {
         _rewardedAdListener?.onAdFailedToLoad(arguments['error_code']);
-      } else if (method == "RewardedAd_onRewardedVideoStarted") {
+      } else if (method == "RewardedAd_onAdShown") {
         _rewardedAdListener?.onAdShown();
-      } else if (method == "RewardedAd_onRewardedVideoClicked") {
+      } else if (method == "RewardedAd_onAdClicked") {
         _rewardedAdListener?.onAdClicked();
-      } else if (method == "RewardedAd_onRewardedVideoFinished") {
-        if (arguments['finish_state'] == 3) {
-          _rewardedAdListener?.onAdRewarded();
-        }
-
+      } else if (method == "RewardedAd_onAdRewarded") {
+        _rewardedAdListener?.onAdRewarded();
+      } else if (method == "RewardedAd_onAdDismissed") {
         _rewardedAdListener?.onAdDismissed();
       }
     });

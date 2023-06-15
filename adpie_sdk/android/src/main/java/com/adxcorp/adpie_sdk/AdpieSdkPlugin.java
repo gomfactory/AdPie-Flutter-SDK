@@ -268,49 +268,33 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
       rewardedVideoAd.setAdListener(new RewardedVideoAd.RewardedVideoAdListener() {
         @Override
         public void onRewardedVideoLoaded() {
-          defaultChannel.invokeMethod("RewardedAd_onRewardedVideoLoaded", null);
+          defaultChannel.invokeMethod("RewardedAd_onAdLoaded", null);
         }
 
         @Override
         public void onRewardedVideoFailedToLoad(int errorCode) {
           Map<String, Object> params = new HashMap<>();
           params.put("error_code", errorCode);
-          defaultChannel.invokeMethod("RewardedAd_onRewardedVideoFailedToLoad", params);
+          defaultChannel.invokeMethod("RewardedAd_onAdFailedToLoad", params);
         }
 
         @Override
         public void onRewardedVideoClicked() {
-          defaultChannel.invokeMethod("RewardedAd_onRewardedVideoClicked", null);
+          defaultChannel.invokeMethod("RewardedAd_onAdClicked", null);
         }
 
         @Override
         public void onRewardedVideoStarted() {
-          defaultChannel.invokeMethod("RewardedAd_onRewardedVideoStarted", null);
+          defaultChannel.invokeMethod("RewardedAd_onAdShown", null);
         }
 
         @Override
         public void onRewardedVideoFinished(FinishState finishState) {
-
-          int result = 0;
-          switch (finishState) {
-            case ERROR:
-              result = 1;
-              break;
-            case SKIPPED:
-              result = 2;
-              break;
-            case COMPLETED:
-              result = 3;
-              break;
-            case UNKNOWN:
-              result = 0;
-              break;
+          if (finishState == COMPLETED) {
+            defaultChannel.invokeMethod("RewardedAd_onAdRewarded", null);
           }
 
-          Map<String, Object> params = new HashMap<>();
-          params.put("finish_state", result);
-
-          defaultChannel.invokeMethod("RewardedAd_onRewardedVideoFinished", params);
+          defaultChannel.invokeMethod("RewardedAd_onAdDismissed", null);
         }
       });
 
