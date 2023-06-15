@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:adpie_sdk/adpie_sdk.dart';
 import 'dart:io' show Platform;
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 
 import 'banner_ad.dart';
 import 'interstitial_ad.dart';
@@ -11,9 +12,27 @@ String mediaId = Platform.isAndroid ? "57342d1b7174ea39844cac10" : "57342d787174
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  AdPieSdk.initialize(mediaId);
+  if (Platform.isAndroid) {
+    AdPieSdk.initialize(mediaId);
+  } else {
+    initPlugin();
+  }
 
   runApp(const MyApp());
+}
+
+Future<void> initPlugin() async {
+  final TrackingStatus status =
+  await AppTrackingTransparency.trackingAuthorizationStatus;
+  if (status == TrackingStatus.notDetermined) {
+    final TrackingStatus status =
+    await AppTrackingTransparency.requestTrackingAuthorization();
+  }
+
+  final uuid = await AppTrackingTransparency.getAdvertisingIdentifier();
+  print("UUID: $uuid");
+
+  AdPieSdk.initialize(mediaId);
 }
 
 class MyApp extends StatelessWidget {
@@ -60,19 +79,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
