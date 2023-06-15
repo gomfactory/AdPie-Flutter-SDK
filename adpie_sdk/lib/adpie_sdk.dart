@@ -4,7 +4,7 @@ import 'package:adpie_sdk/src/adpie_sdk_listener.dart';
 export 'package:adpie_sdk/src/adpie_sdk_listener.dart';
 
 class AdPieSdk {
-  static const version = "0.0.1";
+  static const version = "0.0.2";
 
   static const channel = MethodChannel('adpie_sdk');
 
