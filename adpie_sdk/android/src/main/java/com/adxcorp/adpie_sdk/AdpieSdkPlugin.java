@@ -4,6 +4,7 @@ import static com.gomfactory.adpie.sdk.videoads.FinishState.*;
 
 import android.app.Activity;
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -42,6 +43,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
   private ActivityPluginBinding lastActivityPluginBinding;
 
   private final Map<String, AdView> mAdViews= new HashMap<>( 2 );
+  private final Map<String, String> mAdViewPositions = new HashMap<>( 2 );
   private final Map<String, InterstitialAd> mInterstitials = new HashMap<>( 2 );
   private final Map<String, RewardedVideoAd> mRewardedAds   = new HashMap<>( 2 );
 
@@ -58,8 +60,8 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
     if (call.method.equals("initialize")) {
 
       AdPieLog.setLogEnable(true);
-      String mediaId = call.argument( "media_id" );
-      String pluginVersion = call.argument( "plugin_version" );
+      String mediaId = call.argument("media_id");
+      String pluginVersion = call.argument("plugin_version");
 
       Log.d(TAG, "AdPie Flutter Version : " + pluginVersion
               + ", AdPie SDK Version : " + AdPieSDK.getInstance().getVersion()
@@ -71,9 +73,19 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
       result.success(AdPieSDK.getInstance().isInitialized());
 
+    } else if (call.method.equals("setAdViewPosition")) {
+
+      String slotId = call.argument("slot_id");
+      String position = call.argument("position");
+
+      mAdViewPositions.put(slotId, position);
+      positionAdView(slotId);
+
+      result.success(null);
+
     } else if (call.method.equals("loadAdView")) {
 
-      String slotId = call.argument( "slot_id" );
+      String slotId = call.argument("slot_id");
 
       AdView adView = retrieveAdView(slotId);
 
@@ -83,15 +95,10 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
         currentActivity.addContentView(relativeLayout, new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.MATCH_PARENT));
 
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT);
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-
-        adView.setLayoutParams(layoutParams);
-
         relativeLayout.addView(adView);
       }
+
+      positionAdView(slotId);
 
       adView.load();
 
@@ -115,11 +122,13 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
         mAdViews.remove(slotId);
       }
 
+      mAdViewPositions.remove(slotId);
+
       result.success(null);
 
     } else if (call.method.equals("loadInterstitial")) {
 
-      String slotId = call.argument( "slot_id" );
+      String slotId = call.argument("slot_id");
 
       InterstitialAd interstitial = retrieveInterstitial(slotId);
       interstitial.load();
@@ -128,7 +137,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
     } else if (call.method.equals("isInterstitialLoaded")) {
 
-      String slotId = call.argument( "slot_id" );
+      String slotId = call.argument("slot_id");
 
       InterstitialAd interstitial = retrieveInterstitial(slotId);
 
@@ -136,7 +145,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
     } else if (call.method.equals("showInterstitial")) {
 
-      String slotId = call.argument( "slot_id" );
+      String slotId = call.argument("slot_id");
 
       InterstitialAd interstitial = retrieveInterstitial(slotId);
       interstitial.show();
@@ -145,7 +154,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
     } else if (call.method.equals("destroyInterstitial")) {
 
-      String slotId = call.argument( "slot_id" );
+      String slotId = call.argument("slot_id");
 
       if (mInterstitials.containsKey(slotId)) {
         InterstitialAd interstitial = retrieveInterstitial(slotId);
@@ -159,7 +168,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
     } else if (call.method.equals("loadRewardedAd")) {
 
-      String slotId = call.argument( "slot_id" );
+      String slotId = call.argument("slot_id");
 
       RewardedVideoAd rewardedVideoAd = retrieveRewardedAd(slotId);
       rewardedVideoAd.load();
@@ -168,7 +177,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
     } else if (call.method.equals("isRewardedAdLoaded")) {
 
-      String slotId = call.argument( "slot_id" );
+      String slotId = call.argument("slot_id");
 
       RewardedVideoAd rewardedVideoAd = retrieveRewardedAd(slotId);
 
@@ -176,7 +185,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
     } else if (call.method.equals("showRewardedAd")) {
 
-      String slotId = call.argument( "slot_id" );
+      String slotId = call.argument("slot_id");
 
       RewardedVideoAd rewardedVideoAd = retrieveRewardedAd(slotId);
       rewardedVideoAd.show();
@@ -186,6 +195,70 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
     } else {
       result.notImplemented();
     }
+  }
+
+  private void positionAdView(String slotId) {
+    AdView adView = mAdViews.get(slotId);
+    String position = mAdViewPositions.get(slotId);
+
+    if (adView == null) {
+      return;
+    }
+
+    if (adView.getParent() == null) {
+      return;
+    }
+
+    if (TextUtils.isEmpty(position)) {
+      position = "bottom_center";
+    }
+
+    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
+            RelativeLayout.LayoutParams.WRAP_CONTENT);
+
+    switch (position) {
+      case "top_center" :
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        break;
+      case "top_left" :
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        break;
+      case "top_right" :
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        break;
+      case "center" :
+        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+        break;
+      case "center_left" :
+        layoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        break;
+      case "center_right" :
+        layoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        break;
+      case "bottom_center":
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        break;
+      case "bottom_left" :
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        break;
+      case "bottom_right" :
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        break;
+      default:
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        break;
+    }
+
+    adView.setLayoutParams(layoutParams);
   }
 
   private AdView retrieveAdView(String slotId) {

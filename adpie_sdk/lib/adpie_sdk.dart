@@ -1,7 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:adpie_sdk/src/adpie_sdk_listener.dart';
+import 'package:adpie_sdk/src/adpie_sdk_common.dart';
 
 export 'package:adpie_sdk/src/adpie_sdk_listener.dart';
+export 'package:adpie_sdk/src/adpie_sdk_common.dart';
 
 class AdPieSdk {
   static const version = "0.0.2";
@@ -64,6 +66,13 @@ class AdPieSdk {
 
   static Future<bool?> isInitialized() {
     return channel.invokeMethod('isInitialized');
+  }
+
+  static void setAdViewPosition(String slotId, String position) {
+    channel.invokeMethod('setAdViewPosition', {
+      'slot_id': slotId,
+      'position': position
+    });
   }
 
   static void loadAdView(String slotId) {
