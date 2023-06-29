@@ -1,4 +1,9 @@
 class AdPieCommon {
+  static const String size_320x50 = "320x50";
+  static const String size_320x100 = "320x100";
+  static const String size_300x250 = "300x250";
+  static const String size_320x480 = "320x480";
+
   static const String position_top_center = "top_center";
   static const String position_top_left = "top_left";
   static const String position_top_right = "top_right";

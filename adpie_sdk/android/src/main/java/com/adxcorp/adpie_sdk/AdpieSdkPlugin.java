@@ -17,6 +17,7 @@ import com.gomfactory.adpie.sdk.AdView;
 import com.gomfactory.adpie.sdk.InterstitialAd;
 import com.gomfactory.adpie.sdk.RewardedVideoAd;
 import com.gomfactory.adpie.sdk.util.AdPieLog;
+import com.gomfactory.adpie.sdk.util.DisplayUtil;
 import com.gomfactory.adpie.sdk.videoads.FinishState;
 
 import java.util.HashMap;
@@ -79,15 +80,16 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
       String position = call.argument("position");
 
       mAdViewPositions.put(slotId, position);
-      positionAdView(slotId);
+      updatePositionAdView(slotId);
 
       result.success(null);
 
     } else if (call.method.equals("loadAdView")) {
 
       String slotId = call.argument("slot_id");
+      String size = call.argument("size");
 
-      AdView adView = retrieveAdView(slotId);
+      AdView adView = retrieveAdView(slotId, size);
 
       if (adView.getParent() == null) {
         Activity currentActivity = getCurrentActivity();
@@ -98,7 +100,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
         relativeLayout.addView(adView);
       }
 
-      positionAdView(slotId);
+      updatePositionAdView(slotId);
 
       adView.load();
 
@@ -109,15 +111,17 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
       String slotId = call.argument("slot_id");
 
       if (mAdViews.containsKey(slotId)) {
-        AdView adView = retrieveAdView(slotId);
+        AdView adView = mAdViews.get(slotId);
 
-        ViewParent parent = adView.getParent();
-        if (parent instanceof ViewGroup) {
-          ((ViewGroup) parent).removeView(adView);
+        if (adView != null) {
+          ViewParent parent = adView.getParent();
+          if (parent instanceof ViewGroup) {
+            ((ViewGroup) parent).removeView(adView);
+          }
+
+          adView.destroy();
+          adView = null;
         }
-
-        adView.destroy();
-        adView = null;
 
         mAdViews.remove(slotId);
       }
@@ -197,7 +201,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
     }
   }
 
-  private void positionAdView(String slotId) {
+  private void updatePositionAdView(String slotId) {
     AdView adView = mAdViews.get(slotId);
     String position = mAdViewPositions.get(slotId);
 
@@ -205,16 +209,14 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
       return;
     }
 
-    if (adView.getParent() == null) {
-      return;
-    }
-
     if (TextUtils.isEmpty(position)) {
       position = "bottom_center";
     }
 
-    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
-            RelativeLayout.LayoutParams.WRAP_CONTENT);
+    RelativeLayout.LayoutParams prelayoutParams = (RelativeLayout.LayoutParams) adView.getLayoutParams();
+
+    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(prelayoutParams.width,
+            prelayoutParams.height);
 
     switch (position) {
       case "top_center" :
@@ -261,10 +263,34 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
     adView.setLayoutParams(layoutParams);
   }
 
-  private AdView retrieveAdView(String slotId) {
+  private AdView retrieveAdView(String slotId, String size) {
     AdView adView = mAdViews.get(slotId);
     if (adView == null) {
       adView = new AdView(getCurrentActivity());
+
+      RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+              ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+      switch (size) {
+        case "320x50":
+          layoutParams = new RelativeLayout.LayoutParams(DisplayUtil.dpToPx(context, 320),
+                  DisplayUtil.dpToPx(context, 50));
+          break;
+        case "320x100":
+          layoutParams = new RelativeLayout.LayoutParams(DisplayUtil.dpToPx(context, 320),
+                  DisplayUtil.dpToPx(context, 100));
+          break;
+        case "300x250":
+          layoutParams = new RelativeLayout.LayoutParams(DisplayUtil.dpToPx(context, 300),
+                  DisplayUtil.dpToPx(context, 250));
+          break;
+        case "320x480":
+          layoutParams = new RelativeLayout.LayoutParams(DisplayUtil.dpToPx(context, 320),
+                  DisplayUtil.dpToPx(context, 480));
+          break;
+      }
+      adView.setLayoutParams(layoutParams);
+
       adView.setAdListener(new AdView.AdListener() {
         @Override
         public void onAdLoaded() {

@@ -28,7 +28,7 @@ class _AdPieBanner extends State<AdPieBanner> {
         }));
 
     AdPieSdk.setAdViewPosition(slotId, AdPieCommon.position_bottom_center);
-    AdPieSdk.loadAdView(slotId);
+    AdPieSdk.loadAdView(slotId, AdPieCommon.size_300x250);
   }
 
   @override

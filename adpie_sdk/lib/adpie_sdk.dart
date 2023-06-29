@@ -75,9 +75,10 @@ class AdPieSdk {
     });
   }
 
-  static void loadAdView(String slotId) {
+  static void loadAdView(String slotId, String size) {
     channel.invokeMethod('loadAdView', {
       'slot_id': slotId,
+      'size': size
     });
   }
 

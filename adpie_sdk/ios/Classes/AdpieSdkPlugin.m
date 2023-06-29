@@ -3,6 +3,8 @@
 @interface AdpieSdkPlugin()<APAdViewDelegate, APInterstitialDelegate, APRewardedAdDelegate>
 
 @property (nonatomic, strong) NSMutableDictionary<NSString *, APAdView *> *adViews;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *adViewPositions;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSArray<NSLayoutConstraint *> *> *adViewConstraints;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, APInterstitial *> *interstitials;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, APRewardedAd *> *rewardedAds;
 
@@ -18,6 +20,8 @@ static FlutterMethodChannel *adpieSdkChannel;
     self = [super init];
     if (self) {
         self.adViews = [NSMutableDictionary dictionaryWithCapacity: 2];
+        self.adViewPositions = [NSMutableDictionary dictionaryWithCapacity: 2];
+        self.adViewConstraints = [NSMutableDictionary dictionaryWithCapacity: 2];
         self.interstitials = [NSMutableDictionary dictionaryWithCapacity: 2];
         self.rewardedAds = [NSMutableDictionary dictionaryWithCapacity: 2];
         
@@ -54,17 +58,35 @@ static FlutterMethodChannel *adpieSdkChannel;
       BOOL isInitialized = [[AdPieSDK sharedInstance] isInitialized];
       
       result(@(isInitialized));
+  } else if ([@"setAdViewPosition" isEqualToString: call.method]) {
+        NSString *slotId = call.arguments[@"slot_id"];
+        NSString *position = call.arguments[@"position"];
+
+        self.adViewPositions[slotId] = position;
+        [self updatePositionAdView:slotId];
+
+        result(nil);
   } else if ([@"loadAdView" isEqualToString: call.method]) {
-      APAdView *adView = [self retrieveAdViewForSlotId:call.arguments[@"slot_id"]];
+      NSString *slotId = call.arguments[@"slot_id"];
+      NSString *size = call.arguments[@"size"];
+      APAdView *adView = [self retrieveAdViewForSlotId:slotId withSize:size];
       adView.delegate = self;
+
+      [self updatePositionAdView:slotId];
       [adView load];
+
       result(nil);
   } else if ([@"destroyAdView" isEqualToString: call.method]) {
       NSString *slotId = call.arguments[@"slot_id"];
-      APAdView *adView = [self retrieveAdViewForSlotId:slotId];
-      adView.delegate = nil;
-      [adView removeFromSuperview];
+      APAdView *adView = self.adViews[slotId];
+      if (adView != nil) {
+          adView.delegate = nil;
+          [adView removeFromSuperview];
+      }
       [self.adViews removeObjectForKey: slotId];
+      [self.adViewPositions removeObjectForKey: slotId];
+      [self.adViewConstraints removeObjectForKey: slotId];
+
       result(nil);
   } else if ([@"loadInterstitial" isEqualToString: call.method]) {
       APInterstitial *interstitial = [self retrieveInterstitialForSlotId:call.arguments[@"slot_id"]];
@@ -105,28 +127,113 @@ static FlutterMethodChannel *adpieSdkChannel;
   }
 }
 
-- (APAdView *)retrieveAdViewForSlotId:(NSString *)slotId {
+- (APAdView *)retrieveAdViewForSlotId:(NSString *)slotId withSize:(NSString *) size {
     APAdView *result = self.adViews[slotId];
     if (!result) {
-        CGSize bannerSize = CGSizeMake(320, 50);
+        CGSize bannerSize = [self adViewSize:size];
         result = [[APAdView alloc] init];
-        
+
         result.userInteractionEnabled = NO;
         result.translatesAutoresizingMaskIntoConstraints = NO;
-        
-        CGFloat originX = (self.safeAreaBackground.bounds.size.width - bannerSize.width) / 2;
-        CGFloat originY = self.safeAreaBackground.bounds.size.height - bannerSize.height;
 
-        result.frame = CGRectMake(originX, originY, bannerSize.width, bannerSize.height);
+        result.frame = CGRectMake(0, 0, bannerSize.width, bannerSize.height);
         [result setSlotId:slotId];
-        
+
         self.adViews[slotId] = result;
-        
+
         result.rootViewController = [self topViewController];
         [result.rootViewController.view addSubview:result];
     }
-    
+
     return result;
+}
+
+- (void) updatePositionAdView:(NSString *)slotId {
+    if (!slotId) {
+        return;
+    }
+
+    APAdView *adView = self.adViews[slotId];
+    NSString *position = self.adViewPositions[slotId];
+
+    if (!adView) {
+        return;
+    }
+
+    UIView *superview = adView.superview;
+    if (!superview) {
+        return;
+    }
+
+    NSArray<NSLayoutConstraint *> *activeConstraints = self.adViewConstraints[slotId];
+    [NSLayoutConstraint deactivateConstraints: activeConstraints];
+
+    if (![superview.subviews containsObject: self.safeAreaBackground]) {
+        [self.safeAreaBackground removeFromSuperview];
+        [superview insertSubview: self.safeAreaBackground belowSubview: adView];
+    }
+
+    [NSLayoutConstraint deactivateConstraints: self.safeAreaBackground.constraints];
+    self.safeAreaBackground.hidden = NO;
+
+    CGSize adViewSize = adView.bounds.size;
+
+    NSMutableArray<NSLayoutConstraint *> *constraints = [NSMutableArray arrayWithObject:
+                                                         [adView.heightAnchor constraintEqualToConstant: adViewSize.height]];
+
+    UILayoutGuide *layoutGuide;
+    if (@available(iOS 11.0, *)) {
+        layoutGuide = superview.safeAreaLayoutGuide;
+    } else {
+        layoutGuide = superview.layoutMarginsGuide;
+    }
+
+    if (!position) {
+        position = @"bottom_center";
+    }
+
+    CGFloat originX = 0;
+    CGFloat originY = 0;
+    
+    NSLog(@"AdView position : %@", position);
+
+    [constraints addObject: [adView.widthAnchor constraintEqualToConstant: adViewSize.width]];
+
+    if ([@"top_center" isEqualToString:position]) {
+        [constraints addObject: [adView.centerXAnchor constraintEqualToAnchor: layoutGuide.centerXAnchor]];
+        [constraints addObject: [adView.topAnchor constraintEqualToAnchor: layoutGuide.topAnchor]];
+    } else if ([@"top_left" isEqualToString:position]) {
+        [constraints addObject: [adView.topAnchor constraintEqualToAnchor: layoutGuide.topAnchor]];
+        [constraints addObject: [adView.leftAnchor constraintEqualToAnchor: superview.leftAnchor]];
+    } else if ([@"top_right" isEqualToString:position]) {
+        [constraints addObject: [adView.topAnchor constraintEqualToAnchor: layoutGuide.topAnchor]];
+        [constraints addObject: [adView.rightAnchor constraintEqualToAnchor: superview.rightAnchor]];
+    } else if ([@"center" isEqualToString:position]) {
+        [constraints addObject: [adView.centerXAnchor constraintEqualToAnchor: layoutGuide.centerXAnchor]];
+        [constraints addObject: [adView.centerYAnchor constraintEqualToAnchor: layoutGuide.centerYAnchor]];
+    } else if ([@"center_left" isEqualToString:position]) {
+        [constraints addObject: [adView.leftAnchor constraintEqualToAnchor: superview.leftAnchor]];
+        [constraints addObject: [adView.centerYAnchor constraintEqualToAnchor: layoutGuide.centerYAnchor]];
+    } else if ([@"center_right" isEqualToString:position]) {
+        [constraints addObject: [adView.rightAnchor constraintEqualToAnchor: superview.rightAnchor]];
+        [constraints addObject: [adView.centerYAnchor constraintEqualToAnchor: layoutGuide.centerYAnchor]];
+    } else if ([@"bottom_center" isEqualToString:position]) {
+        [constraints addObject: [adView.centerXAnchor constraintEqualToAnchor: layoutGuide.centerXAnchor]];
+        [constraints addObject: [adView.bottomAnchor constraintEqualToAnchor: layoutGuide.bottomAnchor]];
+    } else if ([@"bottom_left" isEqualToString:position]) {
+        [constraints addObject: [adView.leftAnchor constraintEqualToAnchor: superview.leftAnchor]];
+        [constraints addObject: [adView.bottomAnchor constraintEqualToAnchor: layoutGuide.bottomAnchor]];
+    } else if ([@"bottom_right" isEqualToString:position]) {
+        [constraints addObject: [adView.rightAnchor constraintEqualToAnchor: superview.rightAnchor]];
+        [constraints addObject: [adView.bottomAnchor constraintEqualToAnchor: layoutGuide.bottomAnchor]];
+    } else {
+        [constraints addObject: [adView.centerXAnchor constraintEqualToAnchor: layoutGuide.centerXAnchor]];
+        [constraints addObject: [adView.bottomAnchor constraintEqualToAnchor: layoutGuide.bottomAnchor]];
+    }
+
+    self.adViewConstraints[slotId] = constraints;
+
+    [NSLayoutConstraint activateConstraints: constraints];
 }
 
 - (APInterstitial *)retrieveInterstitialForSlotId:(NSString *)slotId {
@@ -168,45 +275,15 @@ static FlutterMethodChannel *adpieSdkChannel;
     }
 }
 
-- (void)positionAdView:(APAdView *)adView {
-    UIView *superview = adView.superview;
-    if (!superview) return;
-    
-    if (![superview.subviews containsObject: self.safeAreaBackground]) {
-        [self.safeAreaBackground removeFromSuperview];
-        [superview insertSubview: self.safeAreaBackground belowSubview: adView];
-    }
-    
-    [NSLayoutConstraint deactivateConstraints: self.safeAreaBackground.constraints];
-    self.safeAreaBackground.hidden = NO;
-    
-    CGSize adViewSize = [self adViewSize:@"320x50"];
-    
-    NSMutableArray<NSLayoutConstraint *> *constraints = [NSMutableArray arrayWithObject:
-                                                         [adView.heightAnchor constraintEqualToConstant: adViewSize.height]];
-    
-    UILayoutGuide *layoutGuide;
-    if (@available(iOS 11.0, *)) {
-        layoutGuide = superview.safeAreaLayoutGuide;
-    } else {
-        layoutGuide = superview.layoutMarginsGuide;
-    }
-    
-    [constraints addObjectsFromArray: @[[self.safeAreaBackground.leftAnchor constraintEqualToAnchor: superview.leftAnchor],
-                                        [self.safeAreaBackground.rightAnchor constraintEqualToAnchor: superview.rightAnchor]]];
-    
-    [constraints addObjectsFromArray: @[[adView.bottomAnchor constraintEqualToAnchor: layoutGuide.bottomAnchor],
-                                        [adView.leftAnchor constraintEqualToAnchor: superview.leftAnchor],
-                                        [adView.rightAnchor constraintEqualToAnchor: superview.rightAnchor]]];
-    [constraints addObjectsFromArray: @[[self.safeAreaBackground.topAnchor constraintEqualToAnchor: adView.bottomAnchor],
-                                        [self.safeAreaBackground.bottomAnchor constraintEqualToAnchor: superview.bottomAnchor]]];
-    
-    [NSLayoutConstraint activateConstraints: constraints];
-}
-
 - (CGSize)adViewSize:(NSString *)adSize {
     if ([@"320x50" isEqualToString:adSize]) {
         return CGSizeMake(320.0f, 50.0f);
+    } else if ([@"320x100" isEqualToString:adSize]) {
+        return CGSizeMake(320.0f, 100.0f);
+    } else if ([@"300x250" isEqualToString:adSize]) {
+        return CGSizeMake(300.0f, 250.0f);
+    } else if ([@"320x480" isEqualToString:adSize]) {
+        return CGSizeMake(320.0f, 480.0f);
     } else {
         [NSException raise: NSInvalidArgumentException format: @"Invalid ad format"];
         return CGSizeZero;
@@ -216,7 +293,6 @@ static FlutterMethodChannel *adpieSdkChannel;
 #pragma mark - APAdViewDelegate
 
 - (void)adViewDidLoadAd:(APAdView *)view {
-    [self positionAdView:view];
     view.userInteractionEnabled = YES;
     
     [adpieSdkChannel invokeMethod: @"AdView_onAdLoaded" arguments: nil];
