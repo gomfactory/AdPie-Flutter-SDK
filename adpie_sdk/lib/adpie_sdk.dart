@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:adpie_sdk/src/adpie_sdk_listener.dart';
-import 'package:adpie_sdk/src/adpie_sdk_common.dart';
 
 export 'package:adpie_sdk/src/adpie_sdk_listener.dart';
 export 'package:adpie_sdk/src/adpie_sdk_common.dart';
@@ -21,7 +20,7 @@ class AdPieSdk {
     channel.setMethodCallHandler((MethodCall call) async {
       var method = call.method;
       var arguments = call.arguments;
-      print("method : " + method);
+      print("method : $method");
 
       if (method == "AdView_onAdLoaded") {
         _adViewListener?.onAdLoaded();

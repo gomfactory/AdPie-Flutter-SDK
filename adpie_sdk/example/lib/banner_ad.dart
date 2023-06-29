@@ -27,8 +27,8 @@ class _AdPieBanner extends State<AdPieBanner> {
           print("AdPieSample AdView - onAdClicked");
         }));
 
-    AdPieSdk.setAdViewPosition(slotId, AdPieCommon.position_bottom_center);
-    AdPieSdk.loadAdView(slotId, AdPieCommon.size_300x250);
+    AdPieSdk.setAdViewPosition(slotId, AdPieCommon.positionBottomCenter);
+    AdPieSdk.loadAdView(slotId, AdPieCommon.size_320x50);
   }
 
   @override

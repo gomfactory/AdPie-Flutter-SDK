@@ -1,5 +1,3 @@
-import 'package:adpie_sdk/adpie_sdk.dart';
-
 class AdViewListener {
   void Function() onAdLoaded;
   void Function(int errorCode) onAdFailedToLoad;
