@@ -60,4 +60,11 @@ class _AdPieRewardedAd extends State<AdPieRewardedAd> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    AdPieSdk.destroyRewardedAd(slotId);
+  }
 }

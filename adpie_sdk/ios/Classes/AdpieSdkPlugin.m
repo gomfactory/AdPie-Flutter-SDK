@@ -106,6 +106,15 @@ static FlutterMethodChannel *adpieSdkChannel;
           [interstitial presentFromRootViewController: [self topViewController]];
       }
       result(nil);
+  } else if ([@"destroyInterstitial" isEqualToString: call.method]) {
+    NSString *slotId = call.arguments[@"slot_id"];
+    APInterstitial *interstitial = self.interstitials[slotId];
+    if (!interstitial) {
+        interstitial.delegate = nil;
+    }
+
+    [self.interstitials removeObjectForKey: slotId];
+    result(nil);
   } else if ([@"loadRewardedAd" isEqualToString: call.method]) {
       APRewardedAd *rewardedAd = [self retrieveRewardedAdForSlotId:call.arguments[@"slot_id"]];
       rewardedAd.delegate = self;
@@ -123,6 +132,15 @@ static FlutterMethodChannel *adpieSdkChannel;
       if (rewardedAd.isReady) {
           [rewardedAd presentFromRootViewController: [self topViewController]];
       }
+      result(nil);
+  } else if ([@"destroyRewardedAd" isEqualToString: call.method]) {
+      NSString *slotId = call.arguments[@"slot_id"];
+      APRewardedAd *rewardedAd = self.rewardedAds[slotId];
+      if (!rewardedAd) {
+        rewardedAd.delegate = nil;
+      }
+
+      [self.rewardedAds removeObjectForKey: slotId];
       result(nil);
   }
 }

@@ -129,6 +129,12 @@ class AdPieSdk {
     });
   }
 
+  static void destroyRewardedAd(String slotId) {
+    channel.invokeMethod('destroyRewardedAd', {
+      'slot_id': slotId,
+    });
+  }
+
   static void setAdViewListener(AdViewListener adViewListener) {
     _adViewListener = adViewListener;
   }

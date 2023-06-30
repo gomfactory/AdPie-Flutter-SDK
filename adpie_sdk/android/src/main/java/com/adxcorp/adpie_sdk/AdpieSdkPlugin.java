@@ -143,16 +143,21 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
       String slotId = call.argument("slot_id");
 
-      InterstitialAd interstitial = retrieveInterstitial(slotId);
-
-      result.success(interstitial.isLoaded());
+      if (mInterstitials.containsKey(slotId)) {
+        InterstitialAd interstitial = retrieveInterstitial(slotId);
+        result.success(interstitial.isLoaded());
+      } else {
+        result.success(false);
+      }
 
     } else if (call.method.equals("showInterstitial")) {
 
       String slotId = call.argument("slot_id");
 
-      InterstitialAd interstitial = retrieveInterstitial(slotId);
-      interstitial.show();
+      if (mInterstitials.containsKey(slotId)) {
+        InterstitialAd interstitial = retrieveInterstitial(slotId);
+        interstitial.show();
+      }
 
       result.success(null);
 
@@ -162,8 +167,10 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
       if (mInterstitials.containsKey(slotId)) {
         InterstitialAd interstitial = retrieveInterstitial(slotId);
-        interstitial.destroy();
-        interstitial = null;
+        if (interstitial != null) {
+          interstitial.destroy();
+          interstitial = null;
+        }
 
         mInterstitials.remove(slotId);
       }
@@ -183,19 +190,39 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
       String slotId = call.argument("slot_id");
 
-      RewardedVideoAd rewardedVideoAd = retrieveRewardedAd(slotId);
+      if (mRewardedAds.containsKey(slotId)) {
+        RewardedVideoAd rewardedVideoAd = retrieveRewardedAd(slotId);
 
-      result.success(rewardedVideoAd.isLoaded());
+        result.success(rewardedVideoAd.isLoaded());
+      } else {
+        result.success(false);
+      }
 
     } else if (call.method.equals("showRewardedAd")) {
 
       String slotId = call.argument("slot_id");
 
-      RewardedVideoAd rewardedVideoAd = retrieveRewardedAd(slotId);
-      rewardedVideoAd.show();
+      if (mRewardedAds.containsKey(slotId)) {
+        RewardedVideoAd rewardedVideoAd = retrieveRewardedAd(slotId);
+        rewardedVideoAd.show();
+      }
 
       result.success(null);
 
+    } else if (call.method.equals("destroyRewardedAd")) {
+      String slotId = call.argument("slot_id");
+
+      if (mRewardedAds.containsKey(slotId)) {
+        RewardedVideoAd rewardedVideoAd = retrieveRewardedAd(slotId);
+        if (rewardedVideoAd != null) {
+          rewardedVideoAd.destroy();
+          rewardedVideoAd = null;
+        }
+
+        mRewardedAds.remove(slotId);
+      }
+
+      result.success(null);
     } else {
       result.notImplemented();
     }
