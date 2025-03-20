@@ -23,7 +23,11 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 33
+    if (project.android.hasProperty("namespace")) {
+        namespace 'com.adxcorp.adpie_sdk'
+    }
+
+    compileSdk 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -33,9 +37,19 @@ android {
     defaultConfig {
         minSdkVersion 16
     }
-    
+
     dependencies {
         implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'
-    	implementation 'com.github.adxcorp:adpie-android-sdk:1.13.+'
+        implementation 'com.github.adxcorp:adpie-android-sdk:1.14.2'
+    }
+
+    testOptions {
+        unitTests.all {
+            testLogging {
+                events "passed", "skipped", "failed", "standardOut", "standardError"
+                outputs.upToDateWhen {false}
+                showStandardStreams = true
+            }
+        }
     }
 }

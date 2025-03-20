@@ -16,7 +16,7 @@ AdPie Ads plugin for Flutter
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.dependency 'AdPieSDK','~> 1.5'
+  s.dependency 'AdPieSDK','1.6.6'
   s.platform = :ios, '9.0'
   s.static_framework = true
 
