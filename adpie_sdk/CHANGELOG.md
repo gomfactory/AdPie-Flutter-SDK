@@ -1,3 +1,6 @@
+## 1.0.3
+* Android SDK 1.14.2 버전 적용
+* iOS SDK 1.6.6 버전 적용
 ## 1.0.2
 * Android SDK 1.13 이상 버전 적용
 * iOS SDK 1.5 이상 버전 적용
