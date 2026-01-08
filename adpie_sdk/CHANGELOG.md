@@ -1,7 +1,6 @@
-## 1.0.6
-- CHANGELOG 내용 오류 수정
-## 1.0.5
-* Android SDK 1.15.2 버전 적용
+## 1.1.0
+* Android SDK 1.15.1 버전 적용
+* Android OS 16 대응
 ## 1.0.4
 * iOS SDK 1.6.7 버전 적용
 ## 1.0.3
