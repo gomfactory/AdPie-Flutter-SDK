@@ -27,7 +27,7 @@ android {
         namespace 'com.adxcorp.adpie_sdk'
     }
 
-    compileSdk 34
+    compileSdk 35
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -40,7 +40,7 @@ android {
 
     dependencies {
         implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'
-        implementation 'com.github.adxcorp:adpie-android-sdk:1.14.2'
+        implementation 'com.github.adxcorp:adpie-android-sdk:1.15.1'
     }
 
     testOptions {
