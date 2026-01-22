@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
 import com.gomfactory.adpie.sdk.AdPieSDK;
 import com.gomfactory.adpie.sdk.AdView;
 import com.gomfactory.adpie.sdk.InterstitialAd;
-import com.gomfactory.adpie.sdk.RewardedVideoAd;
+import com.gomfactory.adpie.sdk.RewardedAd;
 import com.gomfactory.adpie.sdk.util.AdPieLog;
 import com.gomfactory.adpie.sdk.util.DisplayUtil;
 import com.gomfactory.adpie.sdk.videoads.FinishState;
@@ -46,7 +46,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
   private final Map<String, AdView> mAdViews= new HashMap<>( 2 );
   private final Map<String, String> mAdViewPositions = new HashMap<>( 2 );
   private final Map<String, InterstitialAd> mInterstitials = new HashMap<>( 2 );
-  private final Map<String, RewardedVideoAd> mRewardedAds   = new HashMap<>( 2 );
+  private final Map<String, RewardedAd> mRewardedAds   = new HashMap<>( 2 );
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -181,7 +181,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
       String slotId = call.argument("slot_id");
 
-      RewardedVideoAd rewardedVideoAd = retrieveRewardedAd(slotId);
+      RewardedAd rewardedVideoAd = retrieveRewardedAd(slotId);
       rewardedVideoAd.load();
 
       result.success(null);
@@ -191,7 +191,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
       String slotId = call.argument("slot_id");
 
       if (mRewardedAds.containsKey(slotId)) {
-        RewardedVideoAd rewardedVideoAd = retrieveRewardedAd(slotId);
+        RewardedAd rewardedVideoAd = retrieveRewardedAd(slotId);
 
         result.success(rewardedVideoAd.isLoaded());
       } else {
@@ -203,7 +203,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
       String slotId = call.argument("slot_id");
 
       if (mRewardedAds.containsKey(slotId)) {
-        RewardedVideoAd rewardedVideoAd = retrieveRewardedAd(slotId);
+        RewardedAd rewardedVideoAd = retrieveRewardedAd(slotId);
         rewardedVideoAd.show();
       }
 
@@ -213,7 +213,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
       String slotId = call.argument("slot_id");
 
       if (mRewardedAds.containsKey(slotId)) {
-        RewardedVideoAd rewardedVideoAd = retrieveRewardedAd(slotId);
+        RewardedAd rewardedVideoAd = retrieveRewardedAd(slotId);
         if (rewardedVideoAd != null) {
           rewardedVideoAd.destroy();
           rewardedVideoAd = null;
@@ -377,6 +377,13 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
         public void onAdDismissed() {
           defaultChannel.invokeMethod("Interstitial_onAdDismissed", null);
         }
+
+        @Override
+        public void onAdFailedToShow() {
+          Map<String, Object> params = new HashMap<>();
+          params.put("error_code", 102);
+          defaultChannel.invokeMethod("Interstitial_onAdFailedToShow", params);
+        }  
       });
 
       mInterstitials.put(slotId, interstitialAd);
@@ -385,43 +392,51 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
     return interstitialAd;
   }
 
-  private RewardedVideoAd retrieveRewardedAd(String slotId)
+  private RewardedAd retrieveRewardedAd(String slotId)
   {
-    RewardedVideoAd rewardedVideoAd = mRewardedAds.get(slotId);
+    RewardedAd rewardedVideoAd = mRewardedAds.get(slotId);
     if ( rewardedVideoAd == null )
     {
-      rewardedVideoAd = new RewardedVideoAd(getCurrentActivity(), slotId);
-      rewardedVideoAd.setAdListener(new RewardedVideoAd.RewardedVideoAdListener() {
+      rewardedVideoAd = new RewardedAd(getCurrentActivity(), slotId);
+      rewardedVideoAd.setAdListener(new RewardedAd.RewardedAdListener() {
         @Override
-        public void onRewardedVideoLoaded() {
+        public void onAdLoaded() {
           defaultChannel.invokeMethod("RewardedAd_onAdLoaded", null);
         }
 
         @Override
-        public void onRewardedVideoFailedToLoad(int errorCode) {
+        public void onAdFailedToLoad(int errorCode) {
           Map<String, Object> params = new HashMap<>();
           params.put("error_code", errorCode);
           defaultChannel.invokeMethod("RewardedAd_onAdFailedToLoad", params);
         }
 
         @Override
-        public void onRewardedVideoClicked() {
+        public void onAdClicked() {
           defaultChannel.invokeMethod("RewardedAd_onAdClicked", null);
         }
 
         @Override
-        public void onRewardedVideoStarted() {
+        public void onAdShown() {
           defaultChannel.invokeMethod("RewardedAd_onAdShown", null);
         }
 
         @Override
-        public void onRewardedVideoFinished(FinishState finishState) {
-          if (finishState == COMPLETED) {
-            defaultChannel.invokeMethod("RewardedAd_onAdRewarded", null);
-          }
+        public void onAdRewarded() {
+          defaultChannel.invokeMethod("RewardedAd_onAdRewarded", null);
+        }
 
+        @Override
+        public void onAdDismissed() {
           defaultChannel.invokeMethod("RewardedAd_onAdDismissed", null);
         }
+
+        @Override
+        public void onAdFailedToShow() {
+          Map<String, Object> params = new HashMap<>();
+          params.put("error_code", 102);
+          defaultChannel.invokeMethod("RewardedAd_onAdFailedToShow", params);
+        } 
       });
 
       mRewardedAds.put(slotId, rewardedVideoAd);
