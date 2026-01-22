@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'adpie_sdk'
-  s.version          = '1.6.7'
+  s.version          = '1.6.15'
   s.summary          = 'AdPie Ads plugin for Flutter'
   s.description      = <<-DESC
 AdPie Ads plugin for Flutter
@@ -16,7 +16,7 @@ AdPie Ads plugin for Flutter
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.dependency 'AdPieSDK','1.6.7'
+  s.dependency 'AdPieSDK','1.6.15'
   s.platform = :ios, '12.0'
   s.static_framework = true
 
