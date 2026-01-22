@@ -40,6 +40,8 @@ class AdPieSdk {
         _interstitialAdListener?.onAdClicked();
       } else if (method == "Interstitial_onAdDismissed") {
         _interstitialAdListener?.onAdDismissed();
+      } else if (method == "Interstitial_onAdFailedToShow") {
+        _interstitialAdListener?.onAdFailedToShow?.call(arguments['error_code']);
       }
 
       if (method == "RewardedAd_onAdLoaded") {
@@ -54,6 +56,8 @@ class AdPieSdk {
         _rewardedAdListener?.onAdRewarded();
       } else if (method == "RewardedAd_onAdDismissed") {
         _rewardedAdListener?.onAdDismissed();
+      } else if (method == "RewardedAd_onAdFailedToShow") {
+        _rewardedAdListener?.onAdFailedToShow?.call(arguments['error_code']);
       }
     });
 

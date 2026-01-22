@@ -40,6 +40,9 @@ class _AdPieInterstitialAd extends State<AdPieInterstitialAd>{
                       },
                       onAdDismissed: (){
                         print("AdPieSample InterstitialAd - onAdDismissed");
+                      },
+                      onAdFailedToShow: (int errorCode){
+                        print("AdPieSample InterstitialAd - onAdFailedToShow : $errorCode");
                       })
                   );
 

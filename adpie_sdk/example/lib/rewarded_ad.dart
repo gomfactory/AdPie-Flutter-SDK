@@ -38,6 +38,8 @@ class _AdPieRewardedAd extends State<AdPieRewardedAd> {
                       print("AdPieSample RewardedAd - onAdRewarded");
                     }, onAdDismissed: (){
                       print("AdPieSample RewardedAd - onAdDismissed");
+                  }, onAdFailedToShow: (int errorCode){
+                    print("AdPieSample RewardedAd - onAdFailedToShow : $errorCode");
                   }));
                   AdPieSdk.loadRewardedAd(slotId);
                 },
