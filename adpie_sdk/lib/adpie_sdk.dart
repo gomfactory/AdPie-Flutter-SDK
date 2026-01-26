@@ -41,7 +41,7 @@ class AdPieSdk {
       } else if (method == "Interstitial_onAdDismissed") {
         _interstitialAdListener?.onAdDismissed();
       } else if (method == "Interstitial_onAdFailedToShow") {
-        _interstitialAdListener?.onAdFailedToShow?.call(arguments['error_code']);
+        _interstitialAdListener?.onAdFailedToShow();
       }
 
       if (method == "RewardedAd_onAdLoaded") {
@@ -57,7 +57,7 @@ class AdPieSdk {
       } else if (method == "RewardedAd_onAdDismissed") {
         _rewardedAdListener?.onAdDismissed();
       } else if (method == "RewardedAd_onAdFailedToShow") {
-        _rewardedAdListener?.onAdFailedToShow?.call(arguments['error_code']);
+        _rewardedAdListener?.onAdFailedToShow();
       }
     });
 

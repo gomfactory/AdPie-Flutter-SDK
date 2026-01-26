@@ -380,9 +380,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
         @Override
         public void onAdFailedToShow() {
-          Map<String, Object> params = new HashMap<>();
-          params.put("error_code", 102);
-          defaultChannel.invokeMethod("Interstitial_onAdFailedToShow", params);
+          defaultChannel.invokeMethod("Interstitial_onAdFailedToShow", null);
         }  
       });
 
@@ -433,9 +431,7 @@ public class AdpieSdkPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
         @Override
         public void onAdFailedToShow() {
-          Map<String, Object> params = new HashMap<>();
-          params.put("error_code", 102);
-          defaultChannel.invokeMethod("RewardedAd_onAdFailedToShow", params);
+          defaultChannel.invokeMethod("RewardedAd_onAdFailedToShow", null);
         } 
       });
 

@@ -418,8 +418,7 @@ static FlutterMethodChannel *adpieSdkChannel;
 }
 
 - (void)interstitialDidFailToShowAd:(APInterstitial *)interstitial withError:(NSError *)error {
-    NSDictionary *args = @{@"error_code" : [NSNumber numberWithLong:error.code]};
-    [adpieSdkChannel invokeMethod: @"Interstitial_onAdFailedToShow" arguments: args];
+    [adpieSdkChannel invokeMethod: @"Interstitial_onAdFailedToShow" arguments: nil];
 }
 
 
@@ -455,8 +454,7 @@ static FlutterMethodChannel *adpieSdkChannel;
 }
 
 - (void)rewardedAdDidFailToShowAd:(APRewardedAd *)rewardedAd withError:(NSError *)error {
-    NSDictionary *args = @{@"error_code" : [NSNumber numberWithLong:error.code]};
-    [adpieSdkChannel invokeMethod: @"RewardedAd_onAdFailedToShow" arguments: args];
+    [adpieSdkChannel invokeMethod: @"RewardedAd_onAdFailedToShow" arguments: nil];
 }
 
 @end

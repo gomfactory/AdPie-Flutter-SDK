@@ -48,7 +48,7 @@ class _AdPieRewardedAdState extends State<AdPieRewardedAd> {
       onAdClicked: () => print("AdPieSample RewardedAd - onAdClicked"),
       onAdRewarded: () => print("AdPieSample RewardedAd - onAdRewarded"),
       onAdDismissed: () => print("AdPieSample RewardedAd - onAdDismissed"),
-      onAdFailedToShow: (int errorCode) => print("AdPieSample RewardedAd - onAdFailedToShow : $errorCode"),
+      onAdFailedToShow: () => print("AdPieSample RewardedAd - onAdFailedToShow"),
     ));
 
     AdPieSdk.loadRewardedAd(_slotId);

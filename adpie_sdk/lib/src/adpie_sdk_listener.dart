@@ -17,7 +17,7 @@ class InterstitialAdListener {
   void Function() onAdShown;
   void Function() onAdClicked;
   void Function() onAdDismissed;
-  void Function(int errorCode)? onAdFailedToShow;
+  void Function() onAdFailedToShow;
 
   InterstitialAdListener({
       required this.onAdLoaded,
@@ -25,7 +25,7 @@ class InterstitialAdListener {
       required this.onAdShown,
       required this.onAdClicked,
       required this.onAdDismissed,
-      this.onAdFailedToShow
+      required this.onAdFailedToShow
   });
 }
 
@@ -36,7 +36,7 @@ class RewardedAdListener {
   void Function() onAdClicked;
   void Function() onAdRewarded;
   void Function() onAdDismissed;
-  void Function(int errorCode)? onAdFailedToShow;
+  void Function() onAdFailedToShow;
 
   RewardedAdListener({
     required this.onAdLoaded,
@@ -45,6 +45,6 @@ class RewardedAdListener {
     required this.onAdClicked,
     required this.onAdRewarded,
     required this.onAdDismissed,
-    this.onAdFailedToShow
+    required this.onAdFailedToShow
   });
 }

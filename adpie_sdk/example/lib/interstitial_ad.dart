@@ -48,7 +48,7 @@ class _AdPieInterstitialAdState extends State<AdPieInterstitialAd> {
       onAdShown: () => print("AdPieSample InterstitialAd - onAdShown"),
       onAdClicked: () => print("AdPieSample InterstitialAd - onAdClicked"),
       onAdDismissed: () => print("AdPieSample InterstitialAd - onAdDismissed"),
-      onAdFailedToShow: (int errorCode) => print("AdPieSample InterstitialAd - onAdFailedToShow : $errorCode"),
+      onAdFailedToShow: () => print("AdPieSample InterstitialAd - onAdFailedToShow"),
     ));
 
     AdPieSdk.loadInterstitial(_slotId);
