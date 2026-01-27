@@ -1,3 +1,6 @@
+## 1.1.1
+* Android SDK 1.16.2 버전 적용
+* iOS SDK 1.6.15 버전 적용
 ## 1.1.0
 * Android SDK 1.15.1 버전 적용
 * Android OS 16 대응
